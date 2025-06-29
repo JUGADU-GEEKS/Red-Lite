@@ -14,7 +14,8 @@ import {
   CheckCircle,
   Clock,
   Eye,
-  MapPin
+  MapPin,
+  Bike
 } from "lucide-react";
 
 // Custom scrollbar styles (same as landing page)
@@ -170,6 +171,10 @@ const LaneUpload = ({
                     case 'car': return Car;
                     case 'truck': return Truck;
                     case 'bus': return Bus;
+                    case 'motorcycle':
+                    case 'motorbike':
+                    case 'bike':
+                    case 'bicycle': return Bike;
                     default: return Car;
                   }
                 };
@@ -289,7 +294,7 @@ function Detection() {
         [direction]: { ...prev[direction], loading: false }
       }));
 
-      startWebSocket(data.path, direction);
+      startWebSocket(data.path, direction, data.session_id);
     } catch (error) {
       console.error("Upload failed:", error);
       setLanes(prev => ({
@@ -299,7 +304,7 @@ function Detection() {
     }
   };
 
-  const startWebSocket = (path, direction) => {
+  const startWebSocket = (path, direction, session_id) => {
     // Close existing WebSocket for this direction
     if (wsRefs.current[direction]) {
       wsRefs.current[direction].close();
@@ -309,7 +314,10 @@ function Detection() {
     wsRefs.current[direction] = new WebSocket("ws://localhost:8000/ws/process");
 
     wsRefs.current[direction].onopen = () => {
-      wsRefs.current[direction].send(JSON.stringify({ path }));
+      wsRefs.current[direction].send(JSON.stringify({ 
+        path,
+        session_id 
+      }));
     };
 
     wsRefs.current[direction].onmessage = (event) => {
